@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STEP 슈즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    background: #f5f5f4;
+    color: #1c1917;
+    line-height: 1.5;
+  }
+  header {
+    background: #1c1917;
+    color: #fff;
+    padding: 20px 16px;
+    text-align: center;
+  }
+  header h1 { font-size: 28px; letter-spacing: 2px; }
+  header p { color: #a8a29e; font-size: 14px; }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+  }
+  h2 { font-size: 20px; margin-bottom: 16px; }
+  .products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+  }
+  .card .img {
+    font-size: 64px;
+    text-align: center;
+    background: #fafaf9;
+    border-radius: 8px;
+    padding: 16px 0;
+    margin-bottom: 12px;
+  }
+  .card h3 { font-size: 16px; }
+  .card .desc { font-size: 13px; color: #78716c; flex: 1; margin: 4px 0 8px; }
+  .card .price { font-weight: bold; font-size: 17px; margin-bottom: 12px; }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .add-btn {
+    background: #ea580c;
+    color: #fff;
+    padding: 10px;
+  }
+  .add-btn:hover { background: #c2410c; }
+  .cart {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 16px;
+  }
+  .cart-items { list-style: none; margin-bottom: 16px; }
+  .cart-items li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid #e7e5e4;
+    font-size: 14px;
+  }
+  .cart-items .info { flex: 1; }
+  .cart-items .sub { color: #78716c; font-size: 12px; }
+  .remove-btn {
+    background: #f5f5f4;
+    color: #b91c1c;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .remove-btn:hover { background: #fee2e2; }
+  .empty { color: #a8a29e; font-size: 14px; padding: 12px 0; }
+  .total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+  .order-btn {
+    width: 100%;
+    background: #1c1917;
+    color: #fff;
+    padding: 12px;
+    font-size: 16px;
+  }
+  .order-btn:hover { background: #44403c; }
+  .order-btn:disabled { background: #d6d3d1; cursor: not-allowed; }
+  footer { text-align: center; color: #a8a29e; font-size: 12px; padding: 24px 16px; }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+    .cart { position: static; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>STEP 슈즈</h1>
+  <p>한 걸음 더 편안하게</p>
+</header>
+
+<main>
+  <section>
+    <h2>신발 목록</h2>
+    <div class="products" id="products"></div>
+  </section>
+
+  <aside class="cart">
+    <h2>장바구니 (<span id="cart-count">0</span>)</h2>
+    <ul class="cart-items" id="cart-items"></ul>
+    <div class="total">
+      <span>합계</span>
+      <span id="cart-total">0원</span>
+    </div>
+    <button class="order-btn" id="order-btn" disabled>주문하기</button>
+  </aside>
+</main>
+
+<footer>© STEP 슈즈 · 데모 사이트</footer>
+
+<script>
+  const products = [
+    { id: 1, name: "에어 러너", desc: "가볍고 쿠션감 좋은 러닝화", price: 89000, img: "👟" },
+    { id: 2, name: "클래식 로퍼", desc: "어디에나 어울리는 가죽 로퍼", price: 129000, img: "👞" },
+    { id: 3, name: "트레일 하이커", desc: "험한 길도 거뜬한 등산화", price: 159000, img: "🥾" },
+    { id: 4, name: "데일리 플랫", desc: "편안한 데일리 플랫 슈즈", price: 59000, img: "🥿" },
+    { id: 5, name: "엘레강스 힐", desc: "특별한 날을 위한 하이힐", price: 99000, img: "👠" },
+    { id: 6, name: "윈터 부츠", desc: "따뜻한 겨울용 롱부츠", price: 139000, img: "👢" }
+  ];
+
+  // 장바구니: { 상품 id: 수량 }
+  const cart = {};
+
+  const won = n => n.toLocaleString("ko-KR") + "원";
+
+  function renderProducts() {
+    document.getElementById("products").innerHTML = products.map(p => `
+      <div class="card">
+        <div class="img">${p.img}</div>
+        <h3>${p.name}</h3>
+        <p class="desc">${p.desc}</p>
+        <p class="price">${won(p.price)}</p>
+        <button class="add-btn" data-id="${p.id}">장바구니 담기</button>
+      </div>
+    `).join("");
+  }
+
+  function renderCart() {
+    const list = document.getElementById("cart-items");
+    const ids = Object.keys(cart);
+    let total = 0;
+    let count = 0;
+
+    if (ids.length === 0) {
+      list.innerHTML = '<li class="empty">장바구니가 비어 있습니다.</li>';
+    } else {
+      list.innerHTML = ids.map(id => {
+        const p = products.find(item => item.id === Number(id));
+        const qty = cart[id];
+        total += p.price * qty;
+        count += qty;
+        return `
+          <li>
+            <div class="info">
+              <div>${p.img} ${p.name}</div>
+              <div class="sub">${won(p.price)} × ${qty}</div>
+            </div>
+            <strong>${won(p.price * qty)}</strong>
+            <button class="remove-btn" data-id="${id}">삭제</button>
+          </li>
+        `;
+      }).join("");
+    }
+
+    document.getElementById("cart-total").textContent = won(total);
+    document.getElementById("cart-count").textContent = count;
+    document.getElementById("order-btn").disabled = ids.length === 0;
+  }
+
+  document.getElementById("products").addEventListener("click", e => {
+    const btn = e.target.closest(".add-btn");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    cart[id] = (cart[id] || 0) + 1;
+    renderCart();
+  });
+
+  document.getElementById("cart-items").addEventListener("click", e => {
+    const btn = e.target.closest(".remove-btn");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    cart[id] -= 1;
+    if (cart[id] <= 0) delete cart[id];
+    renderCart();
+  });
+
+  document.getElementById("order-btn").addEventListener("click", () => {
+    const total = document.getElementById("cart-total").textContent;
+    alert(`주문이 완료되었습니다! (데모)\n결제 금액: ${total}`);
+    Object.keys(cart).forEach(id => delete cart[id]);
+    renderCart();
+  });
+
+  renderProducts();
+  renderCart();
+</script>
+</body>
+</html>
